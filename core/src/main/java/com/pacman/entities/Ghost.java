@@ -56,53 +56,34 @@ public class Ghost {
     public void updateTarget(Vector2 pacmanPosition, float deltaTime) {
         switch (state) {
             case CHASE:
-                this.target = pacmanPosition;
+                target = pacmanPosition;
+                pathManager.updatePath(position, target); // A* Path to Pac-Man
                 break;
-            case SCATTER:
-                this.target = scatterTarget; // getScatterTarget() per ghost
-                System.out.println("SCATTER state");
-                break;
-            case FRIGHTENED:
-                this.target = getRandomTarget();
-                break;
-            case EATEN:
-                this.target = homeBase; // getHomeBase() per ghost
-                break;
-            default:
-                this.target = pacmanPosition;
-        }
-        System.out.println("Ghost Target: " + target);
-        pathManager.updatePath(position, target);
-        nextMove = pathManager.moveTowardsTarget(position, deltaTime);
-        System.out.println("Position: " + position);
 
-        if (nextMove == null || reachedTarget()) {
-            target = getRandomTarget();
-            //nextMove = getRandomValidMove();
-        } else {
+            case SCATTER:
+                target = scatterTarget;
+                pathManager.updatePath(position, target); // A* Path to scatter corner
+                break;
+
+            case FRIGHTENED:
+                if (nextMove == null /* || reachedTarget() */ ) {
+                    nextMove = getRandomTarget(); // Pick a random direction
+                }
+                position.add(nextMove.cpy().scl(deltaTime * 100f)); // Move randomly
+                return; // No A*
+
+            case EATEN:
+                target = homeBase;
+                pathManager.updatePath(position, target); // A* Path back to home
+                break;
+        }
+
+        // Move using A* pathfinding
+        nextMove = pathManager.moveTowardsTarget(position, deltaTime);
+        if (nextMove != null) {
             position = nextMove;
         }
-
     }
-
-    public void updatePathAndMove(float deltaTime) {
-        if (state == GhostState.CHASE || state == GhostState.SCATTER) {
-            pathManager.updatePath(position, target); // Use A*
-            //nextMove = pathManager.getNextMove();
-            nextMove = pathManager.moveTowardsTarget(position, deltaTime);
-            if (nextMove == null || reachedTarget()) {
-                target = getRandomTarget();
-                //nextMove = getRandomValidMove();
-            } else {
-                position = nextMove;
-            }
-        } else if (state == GhostState.FRIGHTENED) {
-            position.add(nextMove.cpy().scl(deltaTime * SPEED));
-        } else if (state == GhostState.EATEN) {
-            position = moveDirectlyTo(homeBase, deltaTime);
-        }
-    }
-
 
     // for use with getRandomTarget()
     private boolean isValidTarget(Vector2 target) {
