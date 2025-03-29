@@ -34,21 +34,23 @@ public class PathManager {
         return path == null || path.isEmpty();
     }
 
-    // make sure we don't do the next step in the path unless we've fully crossed to this tile
     public Vector2 moveTowardsTarget(Vector2 position, float deltaTime) {
-        if (isPathEmpty()) return null; // Don't move if no path
+        if (path != null && !path.isEmpty()) {
+            Vector2 nextTile = path.get(0); // Get the next tile in the path (integer coordinates)
+            Vector2 direction = nextTile.cpy().sub(position).nor(); // Direction to next tile
 
-        Vector2 nextMove = path.get(0); // Use first item in path
-        Vector2 direction = nextMove.cpy().sub(position).nor();
-        position.add(direction.scl(100f * deltaTime));
+            // Move towards the next tile at the appropriate speed
+            position.add(direction.scl(deltaTime * 5f));
 
-        // Snap to tile if close enough
-        if (position.epsilonEquals(nextMove, 0.1f)) {
-            position.set(nextMove);
-            path.remove(0); // Remove only after reaching the step
+            // Snap to tile once close enough
+            if (position.epsilonEquals(nextTile, 0.1f)) {
+                position.set(nextTile); // Snap to exact tile position
+                path.remove(0); // Move to the next step in the path
+            }
+
+            return position;
         }
-
-        return (!isPathEmpty()) ? path.get(0) : null; // Return next move if available
+        return null;
     }
 
 }

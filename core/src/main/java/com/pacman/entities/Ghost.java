@@ -32,6 +32,12 @@ public class Ghost {
     private Texture frightenedTexture;
     private Texture eatenTexture;
 
+    private static final float CHASE_SPEED = 80f;
+    private static final float SCATTER_SPEED = 80f;
+    private static final float FRIGHTENED_SPEED = 40f;
+    private static final float EATEN_SPEED = 120f; // Moves quickly back to home
+
+
     public Ghost(Vector2 position, Texture texture, int[][] map) {
         this.position = position;
         this.state = GhostState.SCATTER;  // Default state
